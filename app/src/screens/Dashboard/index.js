@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { withNavigationFocus } from 'react-navigation';
 
 import api from '~/services/api';
 
@@ -9,18 +10,20 @@ import Appointment from '~/components/Appointments';
 
 import { Container, Title, List } from './styles';
 
-export default function Dashboard() {
+function Dashboard({ isFocused }) {
   const [appointments, setAppointments] = useState([]);
 
+  async function loadAppointments() {
+    const response = await api.get('appointments');
+
+    setAppointments(response.data);
+  }
+
   useEffect(() => {
-    async function loadAppointmens() {
-      const response = await api.get('appointments');
-
-      setAppointments(response.data);
+    if (isFocused) {
+      loadAppointments();
     }
-
-    loadAppointmens();
-  }, []);
+  }, [isFocused]);
 
   async function handleCancel(id) {
     const response = await api.delete(`appointments/${id}`);
@@ -41,7 +44,7 @@ export default function Dashboard() {
     <Background>
       <StatusBar backgroundColor="#00cac9" barStyle="light-content" />
       <Container>
-        <Title>Agendamentos</Title>
+        <Title>Meus Agendamentos</Title>
 
         <List
           data={appointments}
@@ -58,6 +61,8 @@ export default function Dashboard() {
 Dashboard.navigationOptions = {
   tabBarLabel: 'Agendamentos',
   tabBarIcon: ({ tintColor }) => (
-    <Icon name="favorite" size={24} color={tintColor} />
+    <Icon name="favorite" size={26} color={tintColor} />
   ),
 };
+
+export default withNavigationFocus(Dashboard);
